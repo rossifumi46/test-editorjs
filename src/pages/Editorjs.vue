@@ -1,5 +1,11 @@
 <template lang="pug">
-  .p-0.m-0.container-fluid
+  .p-0.m-0.container-fluid.mine
+    .info-fixed
+      h4.info {{ info }}
+      ul
+        li.info(v-for="value, key in list")
+          span {{ key }}
+          p {{value}}
     navbar
     .jumbotron.m-0.p-0.p-3.jumbotron-fluid
       .container
@@ -109,9 +115,15 @@ export default {
         },
         onReady: () => {
           console.log('on ready');
+          this.getJson();
+          this.getInfo();
         },
-        async onChange() {
+        onChange: async () => {
           console.log('Now I know that Editor\'s content changed!');
+          this.getJson();
+          const index = this.$refs.editor.state.editor.blocks.getCurrentBlockIndex();
+          this.list = this.json.blocks[index].data;
+          this.info = this.json.blocks[index].type;
         },
         data: {
           time: 1591362820044,
@@ -186,6 +198,8 @@ export default {
         },
       },
       json: {},
+      info: 'Choose Block',
+      list: [],
     };
   },
   methods: {
@@ -194,6 +208,15 @@ export default {
     },
     async getJson() {
       this.json = await this.$refs.editor.state.editor.save().then((res) => res);
+    },
+    getInfo() {
+      [...Array(10).keys()].forEach((i) => {
+        this.$refs.editor.state.editor.blocks.getBlockByIndex(i).holder.addEventListener('mouseup', () => {
+          const index = this.$refs.editor.state.editor.blocks.getCurrentBlockIndex();
+          this.list = this.json.blocks[index].data;
+          this.info = this.json.blocks[index].type;
+        });
+      });
     },
   },
 };
@@ -237,4 +260,29 @@ img {
     white-space: pre-wrap;
   }
 }
+
+.info {
+  margin-left: 20px; 
+}
+
+.info-fixed {
+  position: fixed;
+  right: 50px;
+  top: 100px;
+  background: #FFF;
+  box-shadow: 0 0 5px rgba(0,0,0,0.5);
+  padding: 10px;
+  border-radius: 10px;
+  z-index: 1;
+  max-width: 200px;
+  overflow: scroll;
+  max-height: 80vh;
+}
+
+
+
+.mine {
+  position: relative;
+}
+
 </style>
